@@ -1,4 +1,5 @@
 package com.unir.payments.controller;
+import com.unir.payments.controller.model.PaymentResponse;
 import com.unir.payments.data.model.Payment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,18 +20,6 @@ public class PaymentsController {
         this.service = service;
     }
 
-//    @PostMapping("/orders")
-//    public ResponseEntity<Order> createOrder(@RequestBody @Valid OrderRequest request) { //Se valida con Jakarta Validation API
-//
-//        log.info("Creating order...");
-//        Order created = service.createOrder(request);
-//
-//        if (created != null) {
-//            return ResponseEntity.ok(created);
-//        } else {
-//            return ResponseEntity.badRequest().build();
-//        }
-//    }
 
     @GetMapping("/payments")
     public ResponseEntity<List<Payment>> getPayments() {
@@ -39,7 +28,7 @@ public class PaymentsController {
 
     // GET /payments/{id}
     @GetMapping("/payments/{id}")
-    public ResponseEntity<Payment> getPaymentById(@PathVariable Long id) {
+    public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getPaymentById(id));
     }
 
