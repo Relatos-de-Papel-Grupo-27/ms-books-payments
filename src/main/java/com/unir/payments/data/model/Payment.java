@@ -19,7 +19,6 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relación lógica con Order
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 
