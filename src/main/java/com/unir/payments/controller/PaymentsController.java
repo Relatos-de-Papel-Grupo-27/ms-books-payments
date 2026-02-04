@@ -1,17 +1,26 @@
 package com.unir.payments.controller;
+import com.unir.payments.controller.model.PaymentRequest;
 import com.unir.payments.controller.model.PaymentResponse;
+import com.unir.payments.controller.model.PaymentUpdateRequest;
 import com.unir.payments.data.model.Payment;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.unir.payments.service.PaymentService;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 
 @RestController
 @Slf4j
+@Tag(name = "Payments", description = "API para la gestión de pagos")
 public class PaymentsController {
 
     private final PaymentService service;
@@ -30,6 +39,54 @@ public class PaymentsController {
     @GetMapping("/payments/{id}")
     public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getPaymentById(id));
+    }
+
+    // PUT /payments/{id}
+    @PutMapping("/payments/{id}")
+    @Operation(
+            summary = "Actualizar pago completo (PUT)",
+            description = "**PUT - Actualización completa**: Reemplaza completamente el recurso de pago. " +
+                    "Requiere enviar TODOS los campos obligatorios (orderId, amount, status). " +
+                    "Los campos no enviados serán reemplazados con los valores proporcionados. " +
+                    "Úsalo cuando quieras actualizar todos los campos del pago de una vez."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pago actualizado exitosamente",
+                    content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "404", description = "Pago no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<PaymentResponse> updatePayment(
+            @Parameter(description = "ID del pago a actualizar", required = true, example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "Datos completos del pago (todos los campos son obligatorios)", required = true)
+            @Valid @RequestBody PaymentRequest request) {
+        return ResponseEntity.ok(service.updatePayment(id, request));
+    }
+
+    // PATCH /payments/{id}
+    @PatchMapping("/payments/{id}")
+    @Operation(
+            summary = "Actualizar pago parcialmente (PATCH)",
+            description = "**PATCH - Actualización parcial**: Actualiza solo los campos específicos del pago. " +
+                    "Solo necesitas enviar los campos que deseas modificar (orderId, amount, status). " +
+                    "Los campos no enviados permanecerán sin cambios. " +
+                    "Úsalo cuando solo quieras actualizar uno o algunos campos específicos del pago."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pago actualizado exitosamente",
+                    content = @Content(schema = @Schema(implementation = PaymentResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "404", description = "Pago no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<PaymentResponse> patchPayment(
+            @Parameter(description = "ID del pago a actualizar", required = true, example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "Datos parciales del pago (solo envía los campos que deseas actualizar)", required = true)
+            @Valid @RequestBody PaymentUpdateRequest request) {
+        return ResponseEntity.ok(service.patchPayment(id, request));
     }
 
 }

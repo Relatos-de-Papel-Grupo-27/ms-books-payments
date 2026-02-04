@@ -30,4 +30,11 @@ public class Payment {
 
     @Column(name = "payment_date", nullable = false)
     private LocalDateTime paymentDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private PaymentMethod paymentMethod;
+
+    @Column(name = "provider", nullable = false)
+    private String provider;
 }
