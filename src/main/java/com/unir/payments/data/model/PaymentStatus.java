@@ -3,13 +3,15 @@ package com.unir.payments.data.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum PaymentMethod {
-    TARJETA_CREDITO("Tarjeta Credito"),
-    TARJETA_DEBITO("Tarjeta Debito/Corriente");
+public enum PaymentStatus {
+
+    FAILED("Fallido"),
+    COMPLETED("Completado"),
+    PENDING("Pendiente");
 
     private final String label;
 
-    PaymentMethod(String label) {
+    PaymentStatus(String label) {
         this.label = label;
     }
 
@@ -19,8 +21,8 @@ public enum PaymentMethod {
     }
 
     @JsonCreator
-    public static PaymentMethod fromValue(String value) {
-        for (PaymentMethod type : values()) {
+    public static PaymentStatus fromValue(String value) {
+        for (PaymentStatus type : values()) {
             if (type.label.equalsIgnoreCase(value)
                     || type.name().equalsIgnoreCase(value)) {
                 return type;
@@ -28,4 +30,5 @@ public enum PaymentMethod {
         }
         throw new IllegalArgumentException("Estado invalido: " + value);
     }
+
 }

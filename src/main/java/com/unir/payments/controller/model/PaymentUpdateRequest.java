@@ -1,6 +1,8 @@
 package com.unir.payments.controller.model;
 
 import com.unir.payments.data.model.PaymentMethod;
+import com.unir.payments.data.model.PaymentStatus;
+import com.unir.payments.data.model.Providers;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -25,11 +27,11 @@ public class PaymentUpdateRequest {
     private BigDecimal amount;
 
     @Schema(description = "Estado del pago (opcional) - COMPLETED, PENDING, FAILED", example = "COMPLETED")
-    private String status;
+    private PaymentStatus status;
 
     @Schema(description = "Método de pago (opcional) - TARJETA_CREDITO, TARJETA_DEBITO", example = "TARJETA_CREDITO")
     private PaymentMethod paymentMethod;
 
     @Schema(description = "Proveedor/Pasarela de pago (opcional) - ej: Stripe, PayPal, Mercado Pago", example = "Stripe")
-    private String provider;
+    private Providers provider;
 }

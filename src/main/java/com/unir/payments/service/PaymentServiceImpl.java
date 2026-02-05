@@ -1,10 +1,13 @@
 package com.unir.payments.service;
 
 import com.unir.payments.controller.model.PaymentRequest;
+import com.unir.payments.controller.model.PaymentRequestCreate;
 import com.unir.payments.controller.model.PaymentResponse;
 import com.unir.payments.controller.model.PaymentUpdateRequest;
 import com.unir.payments.data.PaymentJpaRepository;
 import com.unir.payments.data.model.Payment;
+import com.unir.payments.data.model.PaymentStatus;
+import com.unir.payments.data.model.Providers;
 import com.unir.payments.facade.OrdersFacade;
 import com.unir.payments.facade.model.Order;
 import org.springframework.stereotype.Service;
@@ -37,15 +40,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     Order order = ordersFacade.getOrderById(payment.getOrderId());
 
-    return PaymentResponse.builder()
-            .id(payment.getId())
-            .amount(payment.getAmount())
-            .status(payment.getStatus())
-            .PaymentDate(payment.getPaymentDate())
-            .paymentMethod(payment.getPaymentMethod())
-            .provider(payment.getProvider())
-            .order(order)
-            .build();
+    return buildResponse(payment, order);
   }
 
   @Override
@@ -64,15 +59,7 @@ public class PaymentServiceImpl implements PaymentService {
     // Intentar obtener la orden, pero continuar aunque falle
     Order order = ordersFacade.getOrderById(savedPayment.getOrderId());
 
-    return PaymentResponse.builder()
-            .id(savedPayment.getId())
-            .amount(savedPayment.getAmount())
-            .status(savedPayment.getStatus())
-            .PaymentDate(savedPayment.getPaymentDate())
-            .paymentMethod(savedPayment.getPaymentMethod())
-            .provider(savedPayment.getProvider())
-            .order(order)
-            .build();
+    return buildResponse(savedPayment, order);
   }
 
   @Override
@@ -100,14 +87,46 @@ public class PaymentServiceImpl implements PaymentService {
     // Intentar obtener la orden, pero continuar aunque falle
     Order order = ordersFacade.getOrderById(savedPayment.getOrderId());
 
+    if (!"VALID".equals(order.getStatus())) {
+      throw new RuntimeException("Order no valida para pago. Estado actual: " + order.getStatus());
+    }
+
+    return buildResponse(savedPayment, order);
+  }
+
+  @Override
+  public PaymentResponse createPayment(PaymentRequestCreate request) {
+
+    Order order = ordersFacade.getOrderById(request.getOrderId());
+
+    if (!"VALID".equals(order.getStatus())) {
+      throw new RuntimeException("Order no valida para pago. Estado actual: " + order.getStatus());
+    }
+
+    Payment payment = new Payment();
+    payment.setOrderId(order.getId());
+    payment.setAmount(request.getAmount());
+    payment.setStatus(PaymentStatus.valueOf("PENDING"));
+    payment.setPaymentDate(LocalDateTime.now());
+    payment.setPaymentMethod(request.getPaymentMethod());
+    payment.setProvider(request.getProvider());
+
+    Payment saved = repository.save(payment);
+
+    return buildResponse(saved, order);
+  }
+
+  private PaymentResponse buildResponse(Payment payment, Order order) {
+
     return PaymentResponse.builder()
-            .id(savedPayment.getId())
-            .amount(savedPayment.getAmount())
-            .status(savedPayment.getStatus())
-            .PaymentDate(savedPayment.getPaymentDate())
-            .paymentMethod(savedPayment.getPaymentMethod())
-            .provider(savedPayment.getProvider())
+            .id(payment.getId())
+            .amount(payment.getAmount())
+            .status(payment.getStatus())
+            .PaymentDate(payment.getPaymentDate())
+            .paymentMethod(payment.getPaymentMethod())
+            .provider(payment.getProvider())
             .order(order)
             .build();
+
   }
 }

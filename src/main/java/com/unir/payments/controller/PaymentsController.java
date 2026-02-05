@@ -1,5 +1,6 @@
 package com.unir.payments.controller;
 import com.unir.payments.controller.model.PaymentRequest;
+import com.unir.payments.controller.model.PaymentRequestCreate;
 import com.unir.payments.controller.model.PaymentResponse;
 import com.unir.payments.controller.model.PaymentUpdateRequest;
 import com.unir.payments.data.model.Payment;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.unir.payments.service.PaymentService;
@@ -30,11 +32,24 @@ public class PaymentsController {
     }
 
 
+    @Operation(summary = "Get para obtener lista de pagos")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de pagos retornada"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/payments")
     public ResponseEntity<List<Payment>> getPayments() {
         return ResponseEntity.ok(service.getPayments());
     }
 
+
+    @Operation(summary = "Obtener pago por Id.",
+             description = "** Regresa imnformacion del pago y de la orden asociada al pago.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pago encontrado"),
+            @ApiResponse(responseCode = "404", description = "Pago no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     // GET /payments/{id}
     @GetMapping("/payments/{id}")
     public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable Long id) {
@@ -88,5 +103,25 @@ public class PaymentsController {
             @Valid @RequestBody PaymentUpdateRequest request) {
         return ResponseEntity.ok(service.patchPayment(id, request));
     }
+
+    @Operation(
+            summary = "Crear Pago",
+            description = "Para la creacion del pago la orden debe estar en estado VALID"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Pago creado"),
+            @ApiResponse(responseCode = "400", description = "Estado de la oden invalido"),
+            @ApiResponse(responseCode = "404", description = "Orden no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PostMapping
+    public ResponseEntity<PaymentResponse> create(
+            @Valid @RequestBody PaymentRequestCreate request) {
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.createPayment(request));
+    }
+
 
 }

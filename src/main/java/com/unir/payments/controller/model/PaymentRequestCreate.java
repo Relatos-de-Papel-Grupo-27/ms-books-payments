@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Modelo para actualización completa (PUT) - Todos los campos son obligatorios")
-public class PaymentRequest {
+public class PaymentRequestCreate {
 
     @NotNull(message = "orderId es requerido")
     @Schema(description = "ID de la orden asociada al pago", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
@@ -29,12 +29,8 @@ public class PaymentRequest {
     @Schema(description = "Monto del pago", requiredMode = Schema.RequiredMode.REQUIRED, example = "150.00")
     private BigDecimal amount;
 
-    @NotNull(message = "status es requerido")
-    @Schema(description = "Estado del pago (Fallido, Completado, Pendiente)", requiredMode = Schema.RequiredMode.REQUIRED, example = "COMPLETED")
-    private PaymentStatus status;
-
     @NotNull(message = "paymentMethod es requerido")
-    @Schema(description = "Método de pago (Tarjeta Crédito, Tarjeta Débito/Corriente)", requiredMode = Schema.RequiredMode.REQUIRED, example = "TARJETA_CREDITO")
+    @Schema(description = "Método de pago (Tarjeta Credito, Tarjeta Debito/Corriente)", requiredMode = Schema.RequiredMode.REQUIRED, example = "Tarjeta Credito")
     private PaymentMethod paymentMethod;
 
     @NotNull(message = "provider es requerido")
