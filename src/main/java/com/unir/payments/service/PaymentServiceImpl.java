@@ -1,9 +1,6 @@
 package com.unir.payments.service;
 
-import com.unir.payments.controller.model.PaymentRequest;
-import com.unir.payments.controller.model.PaymentRequestCreate;
-import com.unir.payments.controller.model.PaymentResponse;
-import com.unir.payments.controller.model.PaymentUpdateRequest;
+import com.unir.payments.controller.model.*;
 import com.unir.payments.data.PaymentJpaRepository;
 import com.unir.payments.data.model.Payment;
 import com.unir.payments.data.model.PaymentStatus;
@@ -14,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -87,7 +85,7 @@ public class PaymentServiceImpl implements PaymentService {
     // Intentar obtener la orden, pero continuar aunque falle
     Order order = ordersFacade.getOrderById(savedPayment.getOrderId());
 
-    if (!"VALID".equals(order.getStatus())) {
+    if (!"VERIFIED".equals(order.getStatus())) {
       throw new RuntimeException("Order no valida para pago. Estado actual: " + order.getStatus());
     }
 
@@ -95,25 +93,40 @@ public class PaymentServiceImpl implements PaymentService {
   }
 
   @Override
-  public PaymentResponse createPayment(PaymentRequestCreate request) {
+  public PaymentResponseCreate createPayment(PaymentRequestCreate request) {
 
     Order order = ordersFacade.getOrderById(request.getOrderId());
 
-    if (!"VALID".equals(order.getStatus())) {
-      throw new RuntimeException("Order no valida para pago. Estado actual: " + order.getStatus());
+    if (order == null) {
+      throw new NoSuchElementException(
+              "Order with id " + request.getOrderId() + " not found"
+      );
+    }
+
+    if (!"VERIFIED".equals(order.getStatus())) {
+      throw new IllegalArgumentException(
+              "Order not valid for payment. Current status: " + order.getStatus()
+      );
     }
 
     Payment payment = new Payment();
     payment.setOrderId(order.getId());
     payment.setAmount(request.getAmount());
-    payment.setStatus(PaymentStatus.valueOf("PENDING"));
+    payment.setStatus(PaymentStatus.PENDING);
     payment.setPaymentDate(LocalDateTime.now());
     payment.setPaymentMethod(request.getPaymentMethod());
     payment.setProvider(request.getProvider());
 
     Payment saved = repository.save(payment);
 
-    return buildResponse(saved, order);
+    return PaymentResponseCreate.builder()
+            .id(saved.getId())
+            .amount(saved.getAmount())
+            .status(saved.getStatus())
+            .PaymentDate(saved.getPaymentDate())
+            .paymentMethod(saved.getPaymentMethod())
+            .provider(saved.getProvider())
+            .build();
   }
 
   private PaymentResponse buildResponse(Payment payment, Order order) {
@@ -127,6 +140,8 @@ public class PaymentServiceImpl implements PaymentService {
             .provider(payment.getProvider())
             .order(order)
             .build();
-
   }
+
+
+
 }

@@ -1,9 +1,6 @@
 package com.unir.payments.service;
 
-import com.unir.payments.controller.model.PaymentRequest;
-import com.unir.payments.controller.model.PaymentRequestCreate;
-import com.unir.payments.controller.model.PaymentResponse;
-import com.unir.payments.controller.model.PaymentUpdateRequest;
+import com.unir.payments.controller.model.*;
 import com.unir.payments.data.model.Payment;
 
 import java.util.List;
@@ -20,7 +17,7 @@ public interface PaymentService {
 
 	PaymentResponse patchPayment(Long id, PaymentUpdateRequest request);
 
-	PaymentResponse createPayment(PaymentRequestCreate request);
+	PaymentResponseCreate createPayment(PaymentRequestCreate request);
 
 
 }

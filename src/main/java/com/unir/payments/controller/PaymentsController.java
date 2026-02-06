@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import com.unir.payments.service.PaymentService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @Slf4j
@@ -55,6 +57,8 @@ public class PaymentsController {
     public ResponseEntity<PaymentResponse> getPaymentById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getPaymentById(id));
     }
+
+
 
     // PUT /payments/{id}
     @PutMapping("/payments/{id}")
@@ -104,9 +108,10 @@ public class PaymentsController {
         return ResponseEntity.ok(service.patchPayment(id, request));
     }
 
+
     @Operation(
             summary = "Crear Pago",
-            description = "Para la creacion del pago la orden debe estar en estado VALID"
+            description = "Para la creacion del pago la orden debe estar en estado VERIFIED"
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Pago creado"),
@@ -115,12 +120,38 @@ public class PaymentsController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping
-    public ResponseEntity<PaymentResponse> create(
+    public ResponseEntity<?> create(
             @Valid @RequestBody PaymentRequestCreate request) {
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(service.createPayment(request));
+        try {
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(service.createPayment(request));
+
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "error", "INVALID_ORDER_STATE",
+                            "message", ex.getMessage()
+                    ));
+
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "error", "ORDER_NOT_FOUND",
+                            "message", ex.getMessage()
+                    ));
+
+        } catch (Exception ex) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "error", "INTERNAL_ERROR",
+                            "message", "Unexpected error"
+                    ));
+        }
     }
 
 
