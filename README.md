@@ -1,2 +1,2 @@
 # Inventory-Orders
-Ejemplo de aplicación de Inventario
+Ejemplo de aplicación de Inventario.
